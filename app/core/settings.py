@@ -5,6 +5,10 @@ class Settings(BaseSettings):
     # app_name: str = "Office Chatbot"
     BASE_URL: str = "http://localhost:8000"
     ADMIN_EMAIL: str = "admin@example.com"
+
+    JWT_SECRET_KEY: str = "your-256-bit-secret"
+    JWT_ALGORITHM: str = "HS256"
+    JWT_EXPIRE_MINUTES: int = 43200
     
     POSTGRES_USER: str = "postgres"
     POSTGRES_PASSWORD: str = "password"
