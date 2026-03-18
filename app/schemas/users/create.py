@@ -1,9 +1,9 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class UserCreateRequest(BaseModel):
-    email: str
-    password: str
+    email: str 
+    password: str = Field(..., min_length=6, max_length=256, default="")
 
 class UserCreateResponse (BaseModel):
     id: int

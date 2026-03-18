@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     # app_name: str = "Office Chatbot"
     BASE_URL: str = "http://localhost:8000"
     ADMIN_EMAIL: str = "admin@example.com"
+    RANDOM_PASSWORD_LENGTH: int = 12
 
     JWT_SECRET_KEY: str = "your-256-bit-secret"
     JWT_ALGORITHM: str = "HS256"
