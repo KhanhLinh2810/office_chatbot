@@ -7,3 +7,6 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     email = Column(String, unique=True)
     password = Column(String)
+    status = Column(Integer, default=1)
+    google_access_token = Column(String, nullable=True)
+    google_refresh_token = Column(String, nullable=True)

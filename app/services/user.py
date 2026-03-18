@@ -5,7 +5,7 @@ class UserService:
     def __init__(self):
         self.user_repository = UserRepository()
     
-    async def create_user(self, session, email, password):
+    async def create(self, session, email, password):
         user = User(email=email, password=password)        
-        return await self.user_repository.create_user(session, user)
+        return await self.user_repository.create(session, user)
     
