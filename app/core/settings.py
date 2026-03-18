@@ -16,6 +16,11 @@ class Settings(BaseSettings):
     POOL_RECYCLE: int = 1800
     DEBUG: bool = False
 
+    GOOGLE_API_KEY: str = "abc123"
+
+    OPENAI_API_KEY: str = "abc123"
+    OPENAI_BASE_URL: str = ""
+
     model_config = SettingsConfigDict(env_file=".env")
 
     @property
