@@ -8,7 +8,8 @@ class UserUpdateForUserRoleRequest(BaseModel):
 class UserUpdateForAdminRoleRequest(BaseModel):
     email: Optional[str] = None
     password: Optional[str] = None
-    status: Optional[bool] = None
+    status: Optional[int] = None
+    role: Optional[int] = None
 
 class UserUpdateForSystem(BaseModel):
     google_refresh_token: Optional[str] = None

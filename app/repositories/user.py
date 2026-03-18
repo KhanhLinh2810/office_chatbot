@@ -16,6 +16,11 @@ class UserRepository:
         query = select(User).where(User.email == email)
         result = await db.execute(query)
         return result.scalar_one_or_none()
+    
+    async def find_by_id(self, db: AsyncSession, id: int) -> User | None:
+        query = select(User).where(User.id == id)
+        result = await db.execute(query)
+        return result.scalar_one_or_none()
         
     async def update(self, db: AsyncSession, user: User, data: UserUpdate):
         update_data = data.model_dump(exclude_unset=True) 

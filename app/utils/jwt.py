@@ -1,6 +1,5 @@
 import jwt
 import datetime
-import os
 
 from app.core.settings import settings
 
@@ -22,6 +21,6 @@ class JWTUtils:
             payload = jwt.decode(token, secret_key, algorithms=[settings.JWT_ALGORITHM])
             return payload 
         except jwt.ExpiredSignatureError:
-            return "expired_token"
+            raise ValueError("token_expired")
         except jwt.InvalidTokenError:
-            return "invalid_token"
+            raise ValueError("token_invalid")
