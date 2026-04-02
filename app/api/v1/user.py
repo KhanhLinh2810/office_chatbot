@@ -5,7 +5,7 @@ from app.core.settings import settings
 from app.middleware.authenticate import authenticate
 from app.models.user import User
 from app.schemas.users.create import UserCreateRequest, UserCreateResponse
-from app.schemas.users.update import UserUpdate
+from app.schemas.users.update import UserUpdateForAdminRoleRequest
 from app.services import user_service
 from app.utils.string import random_password
 from app.modules import microsoft_service
@@ -39,7 +39,7 @@ async def create(data: UserCreateRequest, session: SessionDep, current_user: Use
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.put("/{user_id}")
-async def update(user_id: int, data: UserUpdate, session: SessionDep, current_user: User = Depends(authenticate)):
+async def update(user_id: int, data: UserUpdateForAdminRoleRequest, session: SessionDep, current_user: User = Depends(authenticate)):
     try:
         if not current_user.role == 1:
             raise HTTPException(status_code=400, detail="permission_denied")

@@ -11,8 +11,7 @@ class UserService:
         self.user_repository = UserRepository()
     
     async def create(self, session: AsyncSession, data: UserCreateRequest):
-        exitting_user = await self.user_repository.find_by_email(session, data.email)
-        if exitting_user:
+        if await self.check_email_exists(session, data.email):
             raise ValueError("email_already_exists")
 
         hash_password = EncryptionUtils.hash_password(data.password)
@@ -36,7 +35,17 @@ class UserService:
     async def find_by_id(self, session: AsyncSession, id: int):
         return await self.user_repository.find_by_id(session, id)
     
+    async def check_email_exists(self, session: AsyncSession, email: str, exclude_user_id: int | None = None):
+        existing_user = await self.user_repository.find_by_email(session, email)
+        if existing_user and (exclude_user_id is None or existing_user.id != exclude_user_id):
+            return True
+        return False
+    
     async def update(self, session: AsyncSession, user: User, data: UserUpdate):
+        # Check email uniqueness if email is being updated
+        if data.email and await self.check_email_exists(session, data.email, exclude_user_id=user.id):
+            raise ValueError("email_already_exists")
+        
         return await self.user_repository.update(session, user, data)
     
     async def reset_password(self, session: AsyncSession, user: User, new_password: str):

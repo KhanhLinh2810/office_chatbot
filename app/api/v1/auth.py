@@ -33,6 +33,7 @@ async def register(data: UserCreateRequest, session: SessionDep):
 @router.post("/login")
 async def login(data: UserLoginRequest, session: SessionDep):
     try:
+        print(f"Login attempt for email: {data.email}")
         user = await auth_service.authenticate(
             session=session,
             email=data.email,

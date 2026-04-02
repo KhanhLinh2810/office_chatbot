@@ -7,6 +7,7 @@ class AuthService:
         self.user_repository = UserRepository()
     
     async def authenticate(self, session, email, password):
+        print(f"Authenticating user with email: {email}")
         user = await self.user_repository.find_by_email(session, email)
         if not user:
             raise ValueError("user_not_found")
