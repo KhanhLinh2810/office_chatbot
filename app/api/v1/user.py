@@ -4,7 +4,7 @@ from app.api.depend import SessionDep
 from app.core.settings import settings
 from app.middleware.authenticate import authenticate
 from app.models.user import User
-from app.schemas.users.create import UserCreateRequest
+from app.schemas.users.create import UserCreateRequest, UserCreateResponse
 from app.services import user_service
 from app.utils.string import random_password
 from app.modules import microsoft_service
@@ -25,9 +25,13 @@ async def create(data: UserCreateRequest, session: SessionDep, current_user: Use
         )
         return {
             "id": user.id,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
             "email": user.email,
             "password": data.password,
             "role": user.role,
+            "status": user.status,
+            "manager_id": user.manager_id,
         }
 
     except ValueError as e:

@@ -4,7 +4,7 @@ from google_auth_oauthlib.flow import Flow
 from httpx import request
 
 from app.api.depend import SessionDep
-from app.schemas.users.create import UserCreateRequest
+from app.schemas.users.create import UserCreateRequest, UserCreateResponse
 from app.schemas.auth.login import UserLoginRequest
 from app.services import user_service, auth_service
 from app.core.settings import settings
@@ -15,7 +15,7 @@ from app.utils.jwt import JWTUtils
 
 router = APIRouter(tags=["auth"])
 
-@router.post("/register")
+@router.post("/register", response_model=UserCreateResponse)
 async def register(data: UserCreateRequest, session: SessionDep):
     try:
         user = await user_service.create(
