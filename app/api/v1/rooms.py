@@ -28,7 +28,6 @@ async def create_room(data: RoomCreateRequest, session: SessionDep, current_user
 
 @router.get("/")
 async def get_rooms(session: SessionDep, current_user: User = Depends(authenticate)):
-    await authenticate
     rooms = await room_service.find_all(session)
     return [
         {
@@ -44,7 +43,6 @@ async def get_rooms(session: SessionDep, current_user: User = Depends(authentica
 
 @router.get("/{room_id}")
 async def get_room(room_id: int, session: SessionDep, current_user: User = Depends(authenticate)):
-    await authenticate
     room = await room_service.find_or_fail_by_id(session, room_id)
     return {
         "id": room.id,
@@ -78,4 +76,4 @@ async def delete_room(room_id: int, session: SessionDep, current_user: User = De
 
     room = await room_service.find_or_fail_by_id(session, room_id)
     await room_service.delete(session, room)
-    return {"message": "room_deleted"}
+    return {"id": room.id}
