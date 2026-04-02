@@ -13,7 +13,7 @@ async def authenticate(request: Request, session: SessionDep):
     token = auth_header.split("Bearer")[1].strip()
     try:
         payload = JWTUtils.verify_token(token)
-        user_id = payload.get("id")
+        user_id = payload.get("user_id")
         if not user_id:
             raise HTTPException(status_code=401, detail="token_invalid")    
         user = await user_service.find_or_fail_by_id(session, user_id)

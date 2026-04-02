@@ -9,7 +9,7 @@ class Settings(BaseSettings):
 
     JWT_SECRET_KEY: str = "your-256-bit-secret"
     JWT_ALGORITHM: str = "HS256"
-    JWT_EXPIRE_MINUTES: int = 43200
+    JWT_EXPIRE_MINUTES: int = 43200000
     
     POSTGRES_USER: str = "postgres"
     POSTGRES_PASSWORD: str = "password"
@@ -32,6 +32,11 @@ class Settings(BaseSettings):
 
     OPENAI_API_KEY: str = "abc123"
     OPENAI_BASE_URL: str = ""
+
+    MICROSOFT_CLIENT_ID: str = "abc123"
+    MICROSOFT_CLIENT_SECRET: str = "abc123"
+    MICROSOFT_AUTHORITY: str = "https://login.microsoftonline.com/your-tenant-id"
+    MICROSOFT_SCOPES: str = "https://graph.microsoft.com/.default"
 
     model_config = SettingsConfigDict(env_file=".env")
 

@@ -20,8 +20,7 @@ async def register(data: UserCreateRequest, session: SessionDep):
     try:
         user = await user_service.create(
             session=session,
-            email=data.email,
-            password=data.password
+            data=data
         )
         return {
             "id": user.id,
