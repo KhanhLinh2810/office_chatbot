@@ -5,6 +5,7 @@ from app.core.settings import settings
 from app.middleware.authenticate import authenticate
 from app.models.user import User
 from app.schemas.users.create import UserCreateRequest, UserCreateResponse
+from app.schemas.users.update import UserUpdate
 from app.services import user_service
 from app.utils.string import random_password
 from app.modules import microsoft_service
@@ -32,6 +33,30 @@ async def create(data: UserCreateRequest, session: SessionDep, current_user: Use
             "role": user.role,
             "status": user.status,
             "manager_id": user.manager_id,
+        }
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.put("/{user_id}")
+async def update(user_id: int, data: UserUpdate, session: SessionDep, current_user: User = Depends(authenticate)):
+    try:
+        if not current_user.role == 1:
+            raise HTTPException(status_code=400, detail="permission_denied")
+        
+        user = await user_service.find_or_fail_by_id(session, user_id)
+        if current_user.id == user.id:
+            raise HTTPException(status_code=400, detail="permission_denied")
+        updated_user = await user_service.update(session, user, data)
+        
+        return {
+            "id": updated_user.id,
+            "first_name": updated_user.first_name,
+            "last_name": updated_user.last_name,
+            "email": updated_user.email,
+            "role": updated_user.role,
+            "status": updated_user.status,
+            "manager_id": updated_user.manager_id,
         }
 
     except ValueError as e:
