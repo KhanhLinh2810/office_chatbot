@@ -34,3 +34,6 @@ class UserService:
     
     async def find_by_id(self, session: AsyncSession, id: int):
         return await self.user_repository.find_by_id(session, id)
+    
+    async def delete(self, session: AsyncSession, user: User):
+        return await self.user_repository.delete(session, user)

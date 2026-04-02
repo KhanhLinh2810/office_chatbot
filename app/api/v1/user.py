@@ -37,6 +37,24 @@ async def create(data: UserCreateRequest, session: SessionDep, current_user: Use
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+@router.delete("/{user_id}")
+async def delete(user_id: int, session: SessionDep, current_user: User = Depends(authenticate)):
+    try:
+        if not current_user.role == 1:
+            raise HTTPException(status_code=400, detail="permission_denied")
+        
+        user = await user_service.find_or_fail_by_id(session, user_id)
+        if current_user.id == user.id:
+            raise HTTPException(status_code=400, detail="permission_denied")
+        await user_service.delete(session, user)
+        
+        return {
+            "id": user.id,
+        }
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 @router.get("/get-calendar")
 async def get_calendar(session: SessionDep, current_user: User = Depends(authenticate)):
     try:
