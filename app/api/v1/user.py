@@ -55,6 +55,28 @@ async def delete(user_id: int, session: SessionDep, current_user: User = Depends
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+@router.put("/{user_id}/reset-password")
+async def reset_password(user_id: int, session: SessionDep, current_user: User = Depends(authenticate)):
+    try:
+        if not current_user.role == 1:
+            raise HTTPException(status_code=400, detail="permission_denied")
+        
+        user = await user_service.find_or_fail_by_id(session, user_id)
+        if current_user.id == user.id:
+            raise HTTPException(status_code=400, detail="permission_denied")
+        
+        new_password = random_password(settings.RANDOM_PASSWORD_LENGTH)
+        await user_service.reset_password(session, user, new_password)
+        
+        return {
+            "id": user.id,
+            "email": user.email,
+            "new_password": new_password,
+        }
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 @router.get("/get-calendar")
 async def get_calendar(session: SessionDep, current_user: User = Depends(authenticate)):
     try:

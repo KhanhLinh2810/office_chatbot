@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.user import User
 from app.repositories.user import UserRepository
 from app.schemas.users.create import UserCreateRequest
+from app.schemas.users.update import UserUpdate
 from app.utils.encryption import EncryptionUtils
 
 class UserService:
@@ -37,3 +38,11 @@ class UserService:
     
     async def delete(self, session: AsyncSession, user: User):
         return await self.user_repository.delete(session, user)
+    
+    async def update(self, session: AsyncSession, user: User, data: UserUpdate):
+        return await self.user_repository.update(session, user, data)
+    
+    async def reset_password(self, session: AsyncSession, user: User, new_password: str):
+        hashed_password = EncryptionUtils.hash_password(new_password)
+        update_data = UserUpdate(password=hashed_password)
+        return await self.update(session, user, update_data)

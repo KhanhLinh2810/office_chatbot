@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import User
 from app.schemas.users.update import UserUpdate
+from app.utils.encryption import EncryptionUtils
 
 class UserRepository:
     async def create(self, db: AsyncSession, user: User):
@@ -28,7 +29,7 @@ class UserRepository:
             return user 
 
         if "password" in update_data:
-            pass 
+            update_data["password"] = EncryptionUtils.hash_password(update_data["password"]) 
 
         for field, value in update_data.items():
             setattr(user, field, value)
