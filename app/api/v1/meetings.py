@@ -110,6 +110,6 @@ async def delete_meeting(
     try:
         meeting = await meeting_service.find_or_fail_by_id(session, meeting_id)
         await meeting_service.delete(session, meeting, current_user)
-        return {"message": "meeting_deleted"}
+        return {"id": meeting.id}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

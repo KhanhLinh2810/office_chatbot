@@ -9,7 +9,7 @@ class UserMeeting(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     meeting_id = Column(Integer, ForeignKey("meetings.id"))
-    role = Column(Integer, default=0)
-    status = Column(Integer, default=1)
+    role = Column(Integer, default=0) # 0. participant 1. organizer
+    status = Column(Integer, default=1) # 1. pending 2. accepted 3. declined
     created_at = Column(DateTime, default=datetime.datetime.now)
     updated_at = Column(DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
