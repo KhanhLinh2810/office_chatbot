@@ -10,6 +10,6 @@ class Room(Base):
     number_room = Column(String)
     address = Column(String)
     capacity = Column(Integer)
-    status = Column(Integer, default=1)
+    status = Column(Integer, default=1) # 1: available, 0: unavailable
     created_at = Column(DateTime, default=datetime.datetime.now)
     updated_at = Column(DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)

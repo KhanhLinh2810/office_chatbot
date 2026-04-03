@@ -6,15 +6,17 @@ from app.models.user import User
 from app.repositories.meetings import MeetingRepository
 from app.schemas.meetings.create import MeetingCreateRequest
 from app.schemas.meetings.update import MeetingUpdate
+from app.services.rooms import RoomService
 
 
 class MeetingService:
     def __init__(self):
         self.meeting_repository = MeetingRepository()
+        self.room_service = RoomService()
 
     async def create(self, session: AsyncSession, data: MeetingCreateRequest, organizer: User):
-        start = data.start_at
-        end = data.end_at
+        start = data.start_at.replace(tzinfo=None)
+        end = data.end_at.replace(tzinfo=None)
 
         if end <= start:
             raise ValueError("end_before_start")
@@ -28,6 +30,24 @@ class MeetingService:
         length = (end - start).total_seconds() / 3600
         if length > 4:
             raise ValueError("meeting_too_long")
+
+        # Conditional requirements for type
+        if data.type in [0, 2] and data.room_id is None:
+            raise ValueError("room_id_required_for_meeting_in_person_or_hybrid")
+
+        if data.type in [1, 2] and (data.link is None or not data.link.strip()):
+            raise ValueError("link_required_for_meeting_online_or_hybrid")
+
+        # Check room availability for in-person and hybrid meetings
+        if data.type in [0, 2]:  # 0: in-person, 2: hybrid
+            # Check if room exists and is available
+            room = await self.room_service.find_or_fail_by_id(session, data.room_id)
+            if room.status != 1:
+                raise ValueError("room_not_available")
+            
+            # Check for time conflicts
+            if await self.meeting_repository.check_room_conflict(session, data.room_id, start, end):
+                raise ValueError("room_time_conflict")
 
         meeting = Meeting(
             room_id=data.room_id,
@@ -71,6 +91,28 @@ class MeetingService:
         length = (end - start).total_seconds() / 3600
         if length > 4:
             raise ValueError("meeting_too_long")
+
+        # Conditional requirements for type
+        meeting_type = data.type if data.type is not None else meeting.type
+        room_id = data.room_id if data.room_id is not None else meeting.room_id
+        link = data.link if data.link is not None else meeting.link
+
+        if meeting_type in [0, 2] and room_id is None:
+            raise ValueError("room_id_required_for_type_0_or_2")
+
+        if meeting_type in [1, 2] and (link is None or not link.strip()):
+            raise ValueError("link_required_for_type_1_or_2")
+
+        # Check room availability for in-person and hybrid meetings
+        if meeting_type in [0, 1]:  # 0: in-person, 1: hybrid
+            # Check if room exists and is available
+            room = await self.room_service.find_or_fail_by_id(session, room_id)
+            if room.status != 1:
+                raise ValueError("room_not_available")
+            
+            # Check for time conflicts (exclude current meeting)
+            if await self.meeting_repository.check_room_conflict(session, room_id, start, end, exclude_meeting_id=meeting.id):
+                raise ValueError("room_time_conflict")
 
         return await self.meeting_repository.update(session, meeting, data)
 

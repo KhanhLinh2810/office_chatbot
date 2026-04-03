@@ -14,7 +14,7 @@ class Meeting(Base):
     end_at = Column(DateTime)
     organizer_id = Column(Integer, ForeignKey("users.id"))
     status = Column(Integer, default=1) # 0: canceled, 1: scheduled, 2: completed
-    type = Column(Integer, default=0) # 0: in-person, 1: online
+    type = Column(Integer, default=0) # 0: in-person, 1: online , 2: hybrid
     link = Column(Text)
     created_at = Column(DateTime, default=datetime.datetime.now)
     updated_at = Column(DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)

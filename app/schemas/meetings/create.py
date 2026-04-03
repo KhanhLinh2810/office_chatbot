@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 
 
 class MeetingCreateRequest(BaseModel):
-    room_id: int
+    room_id: int | None = None
     title: str
     description: str
     start_at: datetime

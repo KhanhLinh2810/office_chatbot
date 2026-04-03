@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.meetings import Meeting
@@ -42,3 +42,20 @@ class MeetingRepository:
     async def delete(self, db: AsyncSession, meeting: Meeting):
         await db.delete(meeting)
         await db.commit()
+    
+    async def check_room_conflict(self, db: AsyncSession, room_id: int, start_at, end_at, exclude_meeting_id: int | None = None):
+        query = select(Meeting).where(
+            and_(
+                Meeting.room_id == room_id,
+                Meeting.status != 2,  # Not canceled
+                or_(
+                    and_(Meeting.start_at < end_at, Meeting.end_at > start_at),
+                )
+            )
+        )
+        if exclude_meeting_id:
+            query = query.where(Meeting.id != exclude_meeting_id)
+        
+        result = await db.execute(query)
+        conflicting_meetings = result.scalars().all()
+        return len(conflicting_meetings) > 0
