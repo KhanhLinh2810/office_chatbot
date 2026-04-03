@@ -63,28 +63,28 @@ async def get_user_meeting(id: int, session: SessionDep, current_user: User = De
         raise HTTPException(status_code=404, detail=str(e))
 
 
-@router.put("/{id}")
-async def update_user_meeting(
-    id: int,
-    data: UserMeetingUpdate,
-    session: SessionDep,
-    current_user: User = Depends(authenticate),
-):
-    try:
-        if current_user.role != 1:
-            raise HTTPException(status_code=400, detail="permission_denied")
+# @router.put("/{id}")
+# async def update_user_meeting(
+#     id: int,
+#     data: UserMeetingUpdate,
+#     session: SessionDep,
+#     current_user: User = Depends(authenticate),
+# ):
+#     try:
+#         if current_user.role != 1:
+#             raise HTTPException(status_code=400, detail="permission_denied")
 
-        um = await user_meeting_service.find_or_fail_by_id(session, id)
-        updated = await user_meeting_service.update(session, um, data)
-        return {
-            "id": updated.id,
-            "user_id": updated.user_id,
-            "meeting_id": updated.meeting_id,
-            "role": updated.role,
-            "status": updated.status,
-        }
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+#         um = await user_meeting_service.find_or_fail_by_id(session, id)
+#         updated = await user_meeting_service.update(session, um, data)
+#         return {
+#             "id": updated.id,
+#             "user_id": updated.user_id,
+#             "meeting_id": updated.meeting_id,
+#             "role": updated.role,
+#             "status": updated.status,
+#         }
+#     except ValueError as e:
+#         raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.delete("/{id}")
@@ -94,11 +94,7 @@ async def delete_user_meeting(
     current_user: User = Depends(authenticate),
 ):
     try:
-        if current_user.role != 1:
-            raise HTTPException(status_code=400, detail="permission_denied")
-
-        um = await user_meeting_service.find_or_fail_by_id(session, id)
-        await user_meeting_service.delete(session, um)
-        return {"message": "deleted"}
+        await user_meeting_service.delete(session, id, current_user.id)
+        return {"id": id}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

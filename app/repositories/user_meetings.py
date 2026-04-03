@@ -39,3 +39,7 @@ class UserMeetingRepository:
         query = select(UserMeeting).where(UserMeeting.user_id == user_id, UserMeeting.meeting_id == meeting_id)
         result = await db.execute(query)
         return result.scalar_one_or_none()
+
+    async def delete(self, db: AsyncSession, user_meeting: UserMeeting):
+        await db.delete(user_meeting)
+        await db.commit()

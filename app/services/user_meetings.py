@@ -74,5 +74,12 @@ class UserMeetingService:
     async def update(self, session: AsyncSession, user_meeting: UserMeeting, data: UserMeetingUpdate):
         return await self.user_meeting_repository.update(session, user_meeting, data)
 
-    async def delete(self, session: AsyncSession, user_meeting: UserMeeting):
-        return await self.user_meeting_repository.delete(session, user_meeting)
+    async def delete(self, session: AsyncSession, user_meeting_id: str, current_user_id: str):
+        um = await self.find_or_fail_by_id(session, user_meeting_id)
+        if not um:
+            raise ValueError("user_meeting_not_found")
+        meeting = await self.meeting_service.find_or_fail_by_id(session, um.meeting_id)
+        if meeting.organizer_id != current_user_id:
+            raise ValueError("permission_denied")
+        
+        return await self.user_meeting_repository.delete(session, um)
