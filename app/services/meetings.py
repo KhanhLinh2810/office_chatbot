@@ -76,8 +76,13 @@ class MeetingService:
         if meeting.organizer_id != current_user.id and current_user.role != 1:
             raise ValueError("permission_denied")
 
-        start = data.start_at or meeting.start_at
-        end = data.end_at or meeting.end_at
+        if data.start_at:
+            data.start_at = data.start_at.replace(tzinfo=None)
+        if data.end_at:
+            data.end_at = data.end_at.replace(tzinfo=None)
+
+        start = data.start_at or meeting.start_at.replace(tzinfo=None)
+        end = data.end_at or meeting.end_at.replace(tzinfo=None)
 
         if end <= start:
             raise ValueError("end_before_start")
@@ -98,13 +103,13 @@ class MeetingService:
         link = data.link if data.link is not None else meeting.link
 
         if meeting_type in [0, 2] and room_id is None:
-            raise ValueError("room_id_required_for_type_0_or_2")
+            raise ValueError("room_id_required_for_meeting_in_person_or_hybrid")
 
         if meeting_type in [1, 2] and (link is None or not link.strip()):
-            raise ValueError("link_required_for_type_1_or_2")
+            raise ValueError("link_required_for_meeting_online_or_hybrid")
 
         # Check room availability for in-person and hybrid meetings
-        if meeting_type in [0, 1]:  # 0: in-person, 1: hybrid
+        if meeting_type in [0, 2]:  # 0: in-person, 2: hybrid
             # Check if room exists and is available
             room = await self.room_service.find_or_fail_by_id(session, room_id)
             if room.status != 1:
