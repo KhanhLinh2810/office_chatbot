@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
+from datetime import datetime
 
 from app.api.depend import SessionDep
 from app.middleware.authenticate import authenticate
@@ -36,8 +37,14 @@ async def create_meeting(
 
 
 @router.get("/")
-async def list_meetings(session: SessionDep, current_user: User = Depends(authenticate)):
-    meetings = await meeting_service.find_all(session)
+async def list_meetings(
+    session: SessionDep,
+    current_user: User = Depends(authenticate),
+    start_at: datetime = Query(None),
+    room_id: int = Query(None),
+    include_my_meeting: bool = Query(False)
+):
+    meetings = await meeting_service.find_with_filters(session, start_at, room_id, include_my_meeting, current_user.id)
     return [
         {
             "id": m.id,

@@ -1,10 +1,10 @@
 import datetime
-from enum import Enum
-from sqlalchemy import Column, DateTime, Integer, String, Enum as SAEnum
+from enum import IntEnum
+from sqlalchemy import Column, DateTime, Integer, String
 from app.models.base import Base
 
 
-class RoomStatus(Enum):
+class RoomStatus(IntEnum):
     UNAVAILABLE = 0
     AVAILABLE = 1
 
@@ -16,6 +16,6 @@ class Room(Base):
     number_room = Column(String)
     address = Column(String)
     capacity = Column(Integer)
-    status = Column(SAEnum(RoomStatus), default=RoomStatus.AVAILABLE)
+    status = Column(Integer, default=RoomStatus.AVAILABLE.value)
     created_at = Column(DateTime, default=datetime.datetime.now)
     updated_at = Column(DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)

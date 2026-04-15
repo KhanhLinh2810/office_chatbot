@@ -1,4 +1,4 @@
-from sqlalchemy import and_, or_, select
+from sqlalchemy import and_, or_, select, union
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.meetings import Meeting
@@ -14,6 +14,23 @@ class MeetingRepository:
 
     async def find_all(self, db: AsyncSession):
         query = select(Meeting)
+        result = await db.execute(query)
+        return result.scalars().all()
+
+    async def find_with_filters(self, db: AsyncSession, start_at=None, room_id=None, include_my_meeting=False, current_user_id=None):
+        query = select(Meeting)
+        conditions = []
+        if start_at:
+            conditions.append(Meeting.start_at >= start_at)
+        if room_id:
+            conditions.append(Meeting.room_id == room_id)
+        if conditions:
+            query = query.where(and_(*conditions))
+
+        if include_my_meeting and current_user_id:
+            user_query = select(Meeting).where(Meeting.organizer_id == current_user_id)
+            query = union(query, user_query)
+
         result = await db.execute(query)
         return result.scalars().all()
 

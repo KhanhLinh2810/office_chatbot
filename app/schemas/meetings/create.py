@@ -1,15 +1,28 @@
 from datetime import datetime
+from enum import IntEnum
 from pydantic import BaseModel, Field
+
+
+class MeetingStatus(IntEnum):
+    CANCELED = 0
+    SCHEDULED = 1
+    COMPLETED = 2
+
+
+class MeetingType(IntEnum):
+    IN_PERSON = 0
+    ONLINE = 1
+    HYBRID = 2
 
 
 class MeetingCreateRequest(BaseModel):
     room_id: int | None = None
-    title: str
+    title: str = Field(..., min_length=1)
     description: str
     start_at: datetime
     end_at: datetime
-    status: int = Field(1, ge=0)
-    type: int = Field(0, ge=0)
+    status: MeetingStatus = Field(MeetingStatus.SCHEDULED)
+    type: MeetingType = Field(MeetingType.IN_PERSON)
     link: str | None = None
 
 
@@ -21,8 +34,8 @@ class MeetingCreateResponse(BaseModel):
     start_at: datetime
     end_at: datetime
     organizer_id: int
-    status: int
-    type: int
+    status: MeetingStatus
+    type: MeetingType
     link: str | None
 
     class Config:
