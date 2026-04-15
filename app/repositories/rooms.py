@@ -1,7 +1,8 @@
-from sqlalchemy import select
+from sqlalchemy import select, exists, and_, not_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.rooms import Room
+from app.models.meetings import Meeting
 from app.schemas.rooms.update import RoomUpdate
 
 
@@ -12,8 +13,25 @@ class RoomRepository:
         await db.refresh(room)
         return room
 
-    async def find_all(self, db: AsyncSession):
+    async def find_all(self, db: AsyncSession, status=None):
         query = select(Room)
+        if status is not None:
+            query = query.where(Room.status == status)
+        result = await db.execute(query)
+        return result.scalars().all()
+
+    async def find_available_rooms(self, db: AsyncSession, start_at, end_at, status=None):
+        # Subquery to check for overlapping meetings
+        overlapping_meetings = select(Meeting.id).where(
+            and_(
+                Meeting.room_id == Room.id,
+                Meeting.start_at < end_at,
+                Meeting.end_at > start_at
+            )
+        )
+        query = select(Room).where(not_(exists(overlapping_meetings)))
+        if status is not None:
+            query = query.where(Room.status == status)
         result = await db.execute(query)
         return result.scalars().all()
 

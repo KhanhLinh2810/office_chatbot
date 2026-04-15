@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
+from datetime import datetime
 
 from app.api.depend import SessionDep
 from app.middleware.authenticate import authenticate
@@ -27,8 +28,17 @@ async def create_room(data: RoomCreateRequest, session: SessionDep, current_user
 
 
 @router.get("/")
-async def get_rooms(session: SessionDep, current_user: User = Depends(authenticate)):
-    rooms = await room_service.find_all(session)
+async def get_rooms(
+    session: SessionDep,
+    current_user: User = Depends(authenticate),
+    start_at: datetime = Query(None),
+    end_at: datetime = Query(None),
+    status: int = Query(None)
+):
+    if start_at and end_at:
+        rooms = await room_service.find_available_rooms(session, start_at, end_at, status)
+    else:
+        rooms = await room_service.find_all(session, status)
     return [
         {
             "id": r.id,

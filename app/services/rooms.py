@@ -19,8 +19,11 @@ class RoomService:
         )
         return await self.room_repository.create(session, room)
 
-    async def find_all(self, session: AsyncSession):
-        return await self.room_repository.find_all(session)
+    async def find_all(self, session: AsyncSession, status=None):
+        return await self.room_repository.find_all(session, status)
+
+    async def find_available_rooms(self, session: AsyncSession, start_at, end_at, status=None):
+        return await self.room_repository.find_available_rooms(session, start_at, end_at, status)
 
     async def find_or_fail_by_id(self, session: AsyncSession, room_id: int):
         room = await self.room_repository.find_by_id(session, room_id)
