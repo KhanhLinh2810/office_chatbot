@@ -15,7 +15,7 @@ from app.utils.jwt import JWTUtils
 
 router = APIRouter(tags=["auth"])
 
-@router.post("/register", response_model=UserCreateResponse)
+@router.post("/register")
 async def register(data: UserCreateRequest, session: SessionDep):
     try:
         user = await user_service.create(
