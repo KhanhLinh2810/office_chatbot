@@ -20,16 +20,17 @@ class MeetingRepository:
     async def find_with_filters(self, db: AsyncSession, start_at=None, room_id=None, include_my_meeting=False, current_user_id=None):
         query = select(Meeting)
         conditions = []
-        if start_at:
+        if start_at is not None:
+            if getattr(start_at, 'tzinfo', None) is not None:
+                start_at = start_at.replace(tzinfo=None)
             conditions.append(Meeting.start_at >= start_at)
         if room_id:
             conditions.append(Meeting.room_id == room_id)
-        if conditions:
-            query = query.where(and_(*conditions))
 
-        if include_my_meeting and current_user_id:
-            user_query = select(Meeting).where(Meeting.organizer_id == current_user_id)
-            query = union(query, user_query)
+        if include_my_meeting and current_user_id and conditions:
+            query = query.where(or_(and_(*conditions), Meeting.organizer_id == current_user_id))
+        elif conditions:
+            query = query.where(and_(*conditions))
 
         result = await db.execute(query)
         return result.scalars().all()

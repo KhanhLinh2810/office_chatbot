@@ -67,6 +67,8 @@ class MeetingService:
         return await self.meeting_repository.find_all(session)
 
     async def find_with_filters(self, session: AsyncSession, start_at=None, room_id=None, include_my_meeting=False, current_user_id=None):
+        if start_at is not None and getattr(start_at, 'tzinfo', None) is not None:
+            start_at = start_at.replace(tzinfo=None)
         return await self.meeting_repository.find_with_filters(session, start_at, room_id, include_my_meeting, current_user_id)
 
     async def find_or_fail_by_id(self, session: AsyncSession, meeting_id: int):
