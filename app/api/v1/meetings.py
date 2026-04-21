@@ -65,18 +65,19 @@ async def list_meetings(
 @router.get("/{meeting_id}")
 async def get_meeting(meeting_id: int, session: SessionDep, current_user: User = Depends(authenticate)):
     try:
-        m = await meeting_service.find_or_fail_by_id(session, meeting_id)
+        meeting, user_meetings = await meeting_service.get_meeting_detail(session, meeting_id)
         return {
-            "id": m.id,
-            "room_id": m.room_id,
-            "title": m.title,
-            "description": m.description,
-            "start_at": m.start_at,
-            "end_at": m.end_at,
-            "organizer_id": m.organizer_id,
-            "status": m.status,
-            "type": m.type,
-            "link": m.link,
+            "id": meeting.id,
+            "room_id": meeting.room_id,
+            "title": meeting.title,
+            "description": meeting.description,
+            "start_at": meeting.start_at,
+            "end_at": meeting.end_at,
+            "organizer_id": meeting.organizer_id,
+            "status": meeting.status,
+            "type": meeting.type,
+            "link": meeting.link,
+            "user_meetings": user_meetings,
         }
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))

@@ -3,16 +3,21 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.meetings import Meeting
 from app.models.user import User
+from app.models.user_meetings import UserMeeting
 from app.repositories.meetings import MeetingRepository
+from app.repositories.user_meetings import UserMeetingRepository
 from app.schemas.meetings.create import MeetingCreateRequest
 from app.schemas.meetings.update import MeetingUpdate
 from app.services.rooms import RoomService
+from app.services.user import UserService
 
 
 class MeetingService:
     def __init__(self):
         self.meeting_repository = MeetingRepository()
         self.room_service = RoomService()
+        self.user_service = UserService()
+        self.user_meeting_repository = UserMeetingRepository()
 
     async def create(self, session: AsyncSession, data: MeetingCreateRequest, organizer: User):
         start = data.start_at.replace(tzinfo=None)
@@ -61,7 +66,43 @@ class MeetingService:
             link=data.link,
         )
 
-        return await self.meeting_repository.create(session, meeting)
+        created_meeting = await self.meeting_repository.create(session, meeting)
+
+        if data.list_user_id:
+            user_ids = [uid for uid in set(data.list_user_id) if uid != organizer.id]
+            users = await self.user_service.find_by_ids(session, user_ids)
+            user_meetings = [
+                UserMeeting(
+                    user_id=user.id,
+                    meeting_id=created_meeting.id,
+                    role=0,
+                    status=1,
+                )
+                for user in users
+            ]
+            await self.user_meeting_repository.create_many(session, user_meetings)
+
+        return created_meeting
+
+    async def get_meeting_detail(self, session: AsyncSession, meeting_id: int):
+        meeting = await self.find_or_fail_by_id(session, meeting_id)
+        user_meetings = await self.user_meeting_repository.find_by_meeting_id(session, meeting_id)
+        print("User Meetings:", user_meetings)  # Debugging statement
+        user_ids = [um.user_id for um in user_meetings]
+        users = await self.user_service.find_by_ids(session, user_ids)
+        print("Users:", users)  # Debugging statement
+        user_dict = {u.id: u for u in users}
+        participants = [
+            {
+                "user_id": um.user_id,
+                "first_name": user_dict[um.user_id].first_name,
+                "last_name": user_dict[um.user_id].last_name,
+                "email": user_dict[um.user_id].email,
+            }
+            for um in user_meetings if um.user_id in user_dict
+        ]
+        print("Participants:", participants)  # Debugging statement
+        return meeting, participants
 
     async def find_all(self, session: AsyncSession):
         return await self.meeting_repository.find_all(session)
@@ -124,7 +165,39 @@ class MeetingService:
             if await self.meeting_repository.check_room_conflict(session, room_id, start, end, exclude_meeting_id=meeting.id):
                 raise ValueError("room_time_conflict")
 
-        return await self.meeting_repository.update(session, meeting, data)
+        updated_meeting = await self.meeting_repository.update(session, meeting, data)
+
+        # Handle user_meetings updates
+        if data.list_user_id or data.list_delete_user_id:
+            current_user_meetings = await self.user_meeting_repository.find_by_meeting_id(session, meeting.id)
+            current_user_ids = {um.user_id for um in current_user_meetings}
+
+            # Add new users
+            if data.list_user_id:
+                new_user_ids = set(data.list_user_id) - current_user_ids - {meeting.organizer_id}
+                if new_user_ids:
+                    users = await self.user_service.find_by_ids(session, list(new_user_ids))
+                    user_meetings = [
+                        UserMeeting(
+                            user_id=user.id,
+                            meeting_id=meeting.id,
+                            role=0,
+                            status=1,
+                        )
+                        for user in users
+                    ]
+                    await self.user_meeting_repository.create_many(session, user_meetings)
+
+            # Delete users
+            if data.list_delete_user_id:
+                delete_user_ids = set(data.list_delete_user_id) & current_user_ids
+                if delete_user_ids:
+                    for user_id in delete_user_ids:
+                        um = next((um for um in current_user_meetings if um.user_id == user_id), None)
+                        if um:
+                            await self.user_meeting_repository.delete(session, um)
+
+        return updated_meeting
 
     async def delete(self, session: AsyncSession, meeting: Meeting, current_user: User):
         if meeting.organizer_id != current_user.id and current_user.role != 1:

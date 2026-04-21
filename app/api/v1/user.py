@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.api.depend import SessionDep
 from app.core.settings import settings
@@ -101,6 +101,27 @@ async def reset_password(user_id: int, session: SessionDep, current_user: User =
 
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/")
+async def list_users(
+    session: SessionDep,
+    current_user: User = Depends(authenticate),
+    email: str | None = Query(None),
+):
+    users = await user_service.find_all(session, email)
+    return [
+        {
+            "id": u.id,
+            "first_name": u.first_name,
+            "last_name": u.last_name,
+            "email": u.email,
+            "role": u.role,
+            "status": u.status,
+            "manager_id": u.manager_id,
+        }
+        for u in users
+    ]
+
 
 @router.get("/get-calendar")
 async def get_calendar(session: SessionDep, current_user: User = Depends(authenticate)):

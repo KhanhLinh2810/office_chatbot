@@ -1,6 +1,7 @@
 import datetime
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Column, DateTime, Enum, ForeignKey, Integer, String
 from app.models.base import Base
+from app.models.enums import UserRole
 
 
 class User(Base):
@@ -11,7 +12,7 @@ class User(Base):
     last_name = Column(String, default="")
     email = Column(String, unique=True)
     password = Column(String)
-    role = Column(Integer, default=0)  # 0: user, 1: admin
+    role = Column(Enum(UserRole), default=UserRole.USER)  # 0: user, 1: admin
     status = Column(Integer, default=1)
     manager_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.now)

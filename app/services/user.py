@@ -22,7 +22,7 @@ class UserService:
             password=hash_password,
             role=data.role,
             status=data.status,
-            manager_id=data.manager_id
+            manager_id=data.manager_id if data.manager_id != 0 else None
         )
         return await self.user_repository.create(session, user)
     
@@ -34,6 +34,12 @@ class UserService:
     
     async def find_by_id(self, session: AsyncSession, id: int):
         return await self.user_repository.find_by_id(session, id)
+
+    async def find_by_ids(self, session: AsyncSession, ids: list[int]):
+        return await self.user_repository.find_by_ids(session, ids)
+
+    async def find_all(self, session: AsyncSession, email: str | None = None):
+        return await self.user_repository.find_all(session, email)
     
     async def check_email_exists(self, session: AsyncSession, email: str, exclude_user_id: int | None = None):
         existing_user = await self.user_repository.find_by_email(session, email)
@@ -45,6 +51,10 @@ class UserService:
         # Check email uniqueness if email is being updated
         if data.email and await self.check_email_exists(session, data.email, exclude_user_id=user.id):
             raise ValueError("email_already_exists")
+        
+        # Handle manager_id = 0 as None
+        if hasattr(data, 'manager_id') and data.manager_id == 0:
+            data.manager_id = None
         
         return await self.user_repository.update(session, user, data)
     

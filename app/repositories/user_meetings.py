@@ -12,6 +12,13 @@ class UserMeetingRepository:
         await db.refresh(user_meeting)
         return user_meeting
 
+    async def create_many(self, db: AsyncSession, user_meetings: list[UserMeeting]):
+        if not user_meetings:
+            return []
+        db.add_all(user_meetings)
+        await db.commit()
+        return user_meetings
+
     async def find_all(self, db: AsyncSession):
         query = select(UserMeeting)
         result = await db.execute(query)
@@ -39,6 +46,11 @@ class UserMeetingRepository:
         query = select(UserMeeting).where(UserMeeting.user_id == user_id, UserMeeting.meeting_id == meeting_id)
         result = await db.execute(query)
         return result.scalar_one_or_none()
+
+    async def find_by_meeting_id(self, db: AsyncSession, meeting_id: int):
+        query = select(UserMeeting).where(UserMeeting.meeting_id == meeting_id)
+        result = await db.execute(query)
+        return result.scalars().all()
 
     async def delete(self, db: AsyncSession, user_meeting: UserMeeting):
         await db.delete(user_meeting)

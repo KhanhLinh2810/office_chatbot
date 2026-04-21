@@ -24,6 +24,7 @@ class MeetingCreateRequest(BaseModel):
     status: MeetingStatus = Field(MeetingStatus.SCHEDULED)
     type: MeetingType = Field(MeetingType.IN_PERSON)
     link: str | None = None
+    list_user_id: list[int] | None = None
 
 
 class MeetingCreateResponse(BaseModel):

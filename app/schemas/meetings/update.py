@@ -26,3 +26,5 @@ class MeetingUpdate(BaseModel):
     status: Optional[MeetingStatus] = None
     type: Optional[MeetingType] = None
     link: Optional[str] = None
+    list_user_id: Optional[list[int]] = None
+    list_delete_user_id: Optional[list[int]] = None

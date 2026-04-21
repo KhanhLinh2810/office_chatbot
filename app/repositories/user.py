@@ -18,6 +18,20 @@ class UserRepository:
         result = await db.execute(query)
         return result.scalar_one_or_none()
     
+    async def find_all(self, db: AsyncSession, email: str | None = None):
+        query = select(User)
+        if email:
+            query = query.where(User.email.ilike(f"%{email}%"))
+        result = await db.execute(query)
+        return result.scalars().all()
+
+    async def find_by_ids(self, db: AsyncSession, ids: list[int]):
+        if not ids:
+            return []
+        query = select(User).where(User.id.in_(ids))
+        result = await db.execute(query)
+        return result.scalars().all()
+
     async def find_by_id(self, db: AsyncSession, id: int) -> User | None:
         query = select(User).where(User.id == id)
         result = await db.execute(query)
