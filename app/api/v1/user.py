@@ -13,6 +13,21 @@ from app.modules import microsoft_service
 
 router = APIRouter(tags=["user"])
 
+@router.get("/me")
+async def get_current_user(current_user: User = Depends(authenticate)):
+    """Get current authenticated user's information"""
+    return {
+        "id": current_user.id,
+        "first_name": current_user.first_name,
+        "last_name": current_user.last_name,
+        "email": current_user.email,
+        "role": current_user.role,
+        "status": current_user.status,
+        "manager_id": current_user.manager_id,
+        "created_at": current_user.created_at,
+        "updated_at": current_user.updated_at,
+    }
+
 @router.post("/")
 async def create(data: UserCreateRequest, session: SessionDep, current_user: User = Depends(authenticate)):
     try:
