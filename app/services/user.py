@@ -2,6 +2,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import User
 from app.repositories.user import UserRepository
+from app.repositories.user_meetings import UserMeetingRepository
+from app.repositories.user_projects import UserProjectRepository
 from app.schemas.users.create import UserCreateRequest
 from app.schemas.users.update import UserUpdate
 from app.utils.encryption import EncryptionUtils
@@ -9,6 +11,8 @@ from app.utils.encryption import EncryptionUtils
 class UserService:
     def __init__(self):
         self.user_repository = UserRepository()
+        self.user_meeting_repository = UserMeetingRepository()
+        self.user_project_repository = UserProjectRepository()
     
     async def create(self, session: AsyncSession, data: UserCreateRequest):
         if await self.check_email_exists(session, data.email):
@@ -64,4 +68,11 @@ class UserService:
         return await self.update(session, user, update_data)
     
     async def delete(self, session: AsyncSession, user: User):
+        # Delete all user_meetings for this user
+        await self.user_meeting_repository.delete_by_user_id(session, user.id)
+        
+        # Delete all user_projects for this user
+        await self.user_project_repository.delete_by_user_id(session, user.id)
+        
+        # Delete the user
         return await self.user_repository.delete(session, user)

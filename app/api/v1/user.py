@@ -28,6 +28,25 @@ async def get_current_user(current_user: User = Depends(authenticate)):
         "updated_at": current_user.updated_at,
     }
 
+@router.get("/{user_id}")
+async def get_user_detail(user_id: int, session: SessionDep, current_user: User = Depends(authenticate)):
+    """Get specific user's details"""
+    try:
+        user = await user_service.find_or_fail_by_id(session, user_id)
+        return {
+            "id": user.id,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "email": user.email,
+            "role": user.role,
+            "status": user.status,
+            "manager_id": user.manager_id,
+            "created_at": user.created_at,
+            "updated_at": user.updated_at,
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
 @router.post("/")
 async def create(data: UserCreateRequest, session: SessionDep, current_user: User = Depends(authenticate)):
     try:

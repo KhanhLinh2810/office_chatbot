@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user_meetings import UserMeeting
@@ -54,4 +54,9 @@ class UserMeetingRepository:
 
     async def delete(self, db: AsyncSession, user_meeting: UserMeeting):
         await db.delete(user_meeting)
+        await db.commit()
+
+    async def delete_by_user_id(self, db: AsyncSession, user_id: int):
+        query = delete(UserMeeting).where(UserMeeting.user_id == user_id)
+        await db.execute(query)
         await db.commit()
