@@ -1,8 +1,9 @@
-from sqlalchemy import select, exists, and_, not_
+from sqlalchemy import select, exists, and_, not_, cast, Enum as SQLEnum
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.rooms import Room
 from app.models.meetings import Meeting
+from app.models.enums import RoomStatus
 from app.schemas.rooms.update import RoomUpdate
 
 
@@ -16,7 +17,9 @@ class RoomRepository:
     async def find_all(self, db: AsyncSession, status=None):
         query = select(Room)
         if status is not None:
-            query = query.where(Room.status == status)
+            # Convert integer status to RoomStatus enum
+            status_enum = RoomStatus(status) if isinstance(status, int) else status
+            query = query.where(Room.status == status_enum)
         result = await db.execute(query)
         return result.scalars().all()
 
@@ -31,7 +34,9 @@ class RoomRepository:
         )
         query = select(Room).where(not_(exists(overlapping_meetings)))
         if status is not None:
-            query = query.where(Room.status == status)
+            # Convert integer status to RoomStatus enum
+            status_enum = RoomStatus(status) if isinstance(status, int) else status
+            query = query.where(Room.status == status_enum)
         result = await db.execute(query)
         return result.scalars().all()
 

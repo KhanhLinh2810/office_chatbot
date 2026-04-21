@@ -2,6 +2,7 @@ from sqlalchemy import and_, or_, select, union
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.meetings import Meeting
+from app.models.enums import MeetingStatus
 from app.schemas.meetings.update import MeetingUpdate
 
 
@@ -65,7 +66,7 @@ class MeetingRepository:
         query = select(Meeting).where(
             and_(
                 Meeting.room_id == room_id,
-                Meeting.status != 2,  # Not canceled
+                Meeting.status != MeetingStatus.COMPLETED,
                 or_(
                     and_(Meeting.start_at < end_at, Meeting.end_at > start_at),
                 )
