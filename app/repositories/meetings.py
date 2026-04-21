@@ -1,4 +1,4 @@
-from sqlalchemy import and_, or_, select, union
+from sqlalchemy import and_, or_, select, union, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.meetings import Meeting
@@ -58,8 +58,18 @@ class MeetingRepository:
         await db.refresh(meeting)
         return meeting
 
+    async def find_by_room_id(self, db: AsyncSession, room_id: int):
+        query = select(Meeting).where(Meeting.room_id == room_id)
+        result = await db.execute(query)
+        return result.scalars().all()
+
     async def delete(self, db: AsyncSession, meeting: Meeting):
         await db.delete(meeting)
+        await db.commit()
+
+    async def delete_by_room_id(self, db: AsyncSession, room_id: int):
+        query = delete(Meeting).where(Meeting.room_id == room_id)
+        await db.execute(query)
         await db.commit()
     
     async def check_room_conflict(self, db: AsyncSession, room_id: int, start_at, end_at, exclude_meeting_id: int | None = None):

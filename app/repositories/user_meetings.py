@@ -60,3 +60,8 @@ class UserMeetingRepository:
         query = delete(UserMeeting).where(UserMeeting.user_id == user_id)
         await db.execute(query)
         await db.commit()
+
+    async def delete_by_meeting_id(self, db: AsyncSession, meeting_id: int):
+        query = delete(UserMeeting).where(UserMeeting.meeting_id == meeting_id)
+        await db.execute(query)
+        await db.commit()

@@ -203,4 +203,8 @@ class MeetingService:
         if meeting.organizer_id != current_user.id and current_user.role != 1:
             raise ValueError("permission_denied")
 
+        # Delete all user_meetings for this meeting
+        await self.user_meeting_repository.delete_by_meeting_id(session, meeting.id)
+        
+        # Delete the meeting
         return await self.meeting_repository.delete(session, meeting)
