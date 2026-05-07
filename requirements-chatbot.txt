@@ -1,0 +1,14 @@
+# Core LangChain dependencies
+langchain>=0.3.0
+langchain-core>=0.3.0
+langchain-google-genai>=2.1.0
+
+# Additional utilities
+pydantic>=2.0.0
+
+# Testing
+hypothesis
+
+# AI Models (already included)
+# google-genai
+# openai

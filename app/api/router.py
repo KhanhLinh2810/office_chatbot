@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 
 from app.middleware.authenticate import authenticate
-from app.api.v1 import user, auth, rooms, meetings, user_meetings, projects
+from app.api.v1 import user, auth, rooms, meetings, user_meetings, projects, chatbot
 
 api_router = APIRouter()
 
@@ -11,3 +11,4 @@ api_router.include_router(rooms.router, prefix="/v1/rooms", dependencies=[Depend
 api_router.include_router(meetings.router, prefix="/v1/meetings", dependencies=[Depends(authenticate)])
 api_router.include_router(user_meetings.router, prefix="/v1/user_meetings", dependencies=[Depends(authenticate)])
 api_router.include_router(projects.router, prefix="/v1/projects", dependencies=[Depends(authenticate)])
+api_router.include_router(chatbot.router, prefix="/v1/chatbot", dependencies=[Depends(authenticate)])
